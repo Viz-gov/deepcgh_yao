@@ -9,6 +9,8 @@ algorithm. Other algorithms like the HoloNet wil be added in the future.
 """
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+!pip install --upgrade tensorflow==2.15.0
+!pip install --upgrade tensorflow-estimator==2.15.0
 import tensorflow as tf
 import tensorflow_estimator as tfestimator
 from queue import Queue
