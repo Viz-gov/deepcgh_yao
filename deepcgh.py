@@ -484,14 +484,14 @@ class DeepDCGH(object):
         
         self.__make_folders()
             
-        self.estimator = tf.estimator.Estimator(model_fn,
+        self.estimator = tfestimator.estimator.Estimator(model_fn,
                                                 model_dir=self.absolute_file_path)
         
         # 
-        train_spec = tf.estimator.TrainSpec(input_fn=train, max_steps=max_steps)
-        eval_spec = tf.estimator.EvalSpec(input_fn=validation)
+        train_spec = tfestimator.estimator.TrainSpec(input_fn=train, max_steps=max_steps)
+        eval_spec = tfestimator.estimator.EvalSpec(input_fn=validation)
         
-        tf.estimator.train_and_evaluate(self.estimator, train_spec, eval_spec)
+        tfestimator.estimator.train_and_evaluate(self.estimator, train_spec, eval_spec)
 
         self.__start_thread()
             
@@ -707,20 +707,20 @@ class DeepDCGH(object):
         def model_fn(features, labels, mode):
             unet = __unet()
             
-            training = (mode == tf.estimator.ModeKeys.TRAIN)
+            training = (mode == tfestimator.estimator.ModeKeys.TRAIN)
             
             phi_slm = unet(features['target'], training = training)
         
-            if mode == tf.estimator.ModeKeys.PREDICT:
-                return tf.estimator.EstimatorSpec(mode, predictions = phi_slm)
+            if mode == tfestimator.estimator.ModeKeys.PREDICT:
+                return tfestimator.estimator.EstimatorSpec(mode, predictions = phi_slm)
             
             else:
                 acc = __big_loss(labels['recon'], phi_slm)
                 
-                if mode == tf.estimator.ModeKeys.EVAL:
-                    return tf.estimator.EstimatorSpec(mode, loss = acc)
+                if mode == tfestimator.estimator.ModeKeys.EVAL:
+                    return tfestimator.estimator.EstimatorSpec(mode, loss = acc)
                 
-                elif mode == tf.estimator.ModeKeys.TRAIN:
+                elif mode == tfestimator.estimator.ModeKeys.TRAIN:
                     train_op = None
                     
                     opt = tf.keras.optimizers.Adam(learning_rate=self.lr)
@@ -733,7 +733,7 @@ class DeepDCGH(object):
                     
                     train_op = tf.group(minimize_op, *update_ops)
                     
-                    return tf.estimator.EstimatorSpec(mode = mode,
+                    return tfestimator.estimator.EstimatorSpec(mode = mode,
                                                       predictions = {self.output_name: phi_slm},
                                                       loss = acc,
                                                       train_op = train_op)
@@ -856,14 +856,14 @@ class DeepCGH(object):
         
         self.__make_folders()
             
-        self.estimator = tf.estimator.Estimator(model_fn,
+        self.estimator = tfestimator.estimator.Estimator(model_fn,
                                                 model_dir=self.absolute_file_path)
         
         # 
-        train_spec = tf.estimator.TrainSpec(input_fn=train, max_steps=max_steps)
-        eval_spec = tf.estimator.EvalSpec(input_fn=validation)
+        train_spec = tfestimator.estimator.TrainSpec(input_fn=train, max_steps=max_steps)
+        eval_spec = tfestimator.estimator.EvalSpec(input_fn=validation)
         
-        tf.estimator.train_and_evaluate(self.estimator, train_spec, eval_spec)
+        tfestimator.estimator.train_and_evaluate(self.estimator, train_spec, eval_spec)
 
         self.__start_thread()
             
@@ -1080,20 +1080,20 @@ class DeepCGH(object):
         def model_fn(features, labels, mode):
             unet = __unet()
             
-            training = (mode == tf.estimator.ModeKeys.TRAIN)
+            training = (mode == tfestimator.estimator.ModeKeys.TRAIN)
             
             phi_slm = unet(features['target'], training = training)
         
-            if mode == tf.estimator.ModeKeys.PREDICT:
-                return tf.estimator.EstimatorSpec(mode, predictions = phi_slm)
+            if mode == tfestimator.estimator.ModeKeys.PREDICT:
+                return tfestimator.estimator.EstimatorSpec(mode, predictions = phi_slm)
             
             else:
                 acc = __big_loss(labels['recon'], phi_slm)
                 
-                if mode == tf.estimator.ModeKeys.EVAL:
-                    return tf.estimator.EstimatorSpec(mode, loss = acc)
+                if mode == tfestimator.estimator.ModeKeys.EVAL:
+                    return tfestimator.estimator.EstimatorSpec(mode, loss = acc)
                 
-                elif mode == tf.estimator.ModeKeys.TRAIN:
+                elif mode == tfestimator.estimator.ModeKeys.TRAIN:
                     train_op = None
                     
                     opt = tf.keras.optimizers.Adam(learning_rate=self.lr)
@@ -1106,7 +1106,7 @@ class DeepCGH(object):
                     
                     train_op = tf.group(minimize_op, *update_ops)
                     
-                    return tf.estimator.EstimatorSpec(mode = mode,
+                    return tfestimator.estimator.EstimatorSpec(mode = mode,
                                                       predictions = {self.output_name: phi_slm},
                                                       loss = acc,
                                                       train_op = train_op)
