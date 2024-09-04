@@ -10,6 +10,7 @@ algorithm. Other algorithms like the HoloNet wil be added in the future.
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
+import tensorflow_estimator as tfestimator
 from queue import Queue
 from threading import Thread
 import warnings
