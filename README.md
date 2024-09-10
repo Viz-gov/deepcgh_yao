@@ -29,7 +29,11 @@ tqdm
 ```
 If you have Python 3.x (preferrably > 3.7), you can easily install package requirements by executing the following command in **Ubuntu** terminal or Anaconda Prompt on **Windows**:
 ```
-pip install tensorflow-gpu==2.3.0 h5py scipy skimage tqdm
+pip install tensorflow-gpu==2.3.0   
+pip install h5py
+pip install scipy
+pip install skimage
+pip install tqdm
 ```
 This software was not tested on **Mac OS** but theoretically it should run smoothly independent of the OS.
 After the installation of packages is complete, you can clone this repository to your machine using:
