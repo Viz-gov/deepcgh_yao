@@ -31,8 +31,8 @@ If you have Python 3.x (preferrably > 3.7), you can easily install package requi
 ```
 pip install tensorflow-gpu==2.3.0   
 pip install h5py
-pip install scipy
-pip install skimage
+pip install scipy==1.4.1 
+pip install scikit-image==0.19.2
 pip install tqdm
 ```
 This software was not tested on **Mac OS** but theoretically it should run smoothly independent of the OS.
