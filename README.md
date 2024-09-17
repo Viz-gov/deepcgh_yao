@@ -43,7 +43,7 @@ pip install protobuf==3.20.*
 ```
 
 To run it on Windows GPU, you also need to install:
-cuda 11.2
+cuda 11.2 and cuDNN 8.1.0(https://developer.nvidia.com/rdp/cudnn-archive)
 
 This software was not tested on **Mac OS** but theoretically it should run smoothly independent of the OS.
 After the installation of packages is complete, you can clone this repository to your machine using:
