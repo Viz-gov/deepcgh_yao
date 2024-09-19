@@ -116,7 +116,13 @@ def get_propagate(data, model):
 
     def __prop__(cf_slm, H = None, center = False):
         if not center:
-            H = tf.broadcast_to(tf.expand_dims(H, axis=0), tf.shape(cf_slm))
+            print("cf_slm shape:", cf_slm.shape)
+            print("H shape before expand_dims:", H.shape)
+            H = tf.expand_dims(H, axis=0)
+            print("H shape after expand_dims:", H.shape)
+            H = tf.broadcast_to(H, tf.shape(cf_slm))
+            print("H shape after broadcast_to:", H.shape)
+            #H = tf.broadcast_to(tf.expand_dims(H, axis=0), tf.shape(cf_slm))
             cf_slm *= tf.signal.fftshift(H, axes = [1, 2])
         fft = tf.signal.ifftshift(tf.signal.fft2d(tf.signal.fftshift(cf_slm, axes = [1, 2])), axes = [1, 2])
         img = tf.cast(tf.expand_dims(tf.abs(tf.pow(fft, 2)), axis=-1), dtype=tf.dtypes.float32)
@@ -124,7 +130,8 @@ def get_propagate(data, model):
     
     def propagate(phi_slm):
                     frames = []
-                    cf_slm = tf.math.exp(tf.dtypes.complex(np.float32(0.), tf.squeeze(phi_slm, axis=-1)))
+                    print("phi_slm shape:", phi_slm.shape, flush=True)
+                    cf_slm = tf.math.exp(tf.dtypes.complex(np.float32(0.), tf.squeeze(phi_slm, axis=0)))
                     for H in Hs:
                         frames.append(__prop__(cf_slm, tf.keras.backend.constant(H, dtype = tf.complex64)))
                     
@@ -186,27 +193,3 @@ def novocgh2D(img, Ks, lr = 0.01):
     return slms, amps
 
 #%%
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -32,13 +32,14 @@ class DeepCGH_Datasets(object):
         num_iter   int, determines the number of iterations of the GS algorithm
         input_shape   tuple of shape (height, width)
     Returns:
-        Instance of the object
+        Instance of the objectc:\\Users\\myadmin\\DeepCGH\\deepcgh.py
     '''
     def __init__(self, params):
         try:
             assert params['object_type'] in ['Disk', 'Line', 'Dot'], 'Object type not supported'
             
             self.path = params['path']
+            self.path = self.path.replace('/', os.sep).replace('\\', os.sep)
             self.shape = params['shape']
             self.N = params['N']
             self.ratio = params['train_ratio']
@@ -67,7 +68,9 @@ class DeepCGH_Datasets(object):
                                            self.object_count,
                                            self.centralized)
         
+        self.path = self.path.replace('/', os.sep).replace('\\', os.sep)
         self.absolute_file_path = os.path.join(os.getcwd(), self.path, self.filename)
+        self.absolute_file_path  = self.absolute_file_path.replace('/', os.sep).replace('\\', os.sep)
         if not (os.path.exists(self.absolute_file_path.replace('Split', '')) or os.path.exists(self.absolute_file_path.replace('Split', 'Train')) or os.path.exists(self.absolute_file_path.replace('Split', 'Test'))):
             warnings.warn('File does not exist. New dataset will be generated once getDataset is called.')
             print(self.absolute_file_path)
@@ -359,6 +362,7 @@ class DeepCGH_Datasets(object):
     def getDataset(self):
         if not (os.path.exists(self.absolute_file_path.replace('Split', '')) or os.path.exists(self.absolute_file_path.replace('Split', 'Train')) or os.path.exists(self.absolute_file_path.replace('Split', 'Test'))):
             print('Generating data...')
+            self.path = self.path.replace('/', os.sep).replace('\\', os.sep)
             folder = os.path.join(os.getcwd(), self.path)
             
             if not os.path.exists(folder):
@@ -387,6 +391,7 @@ class DeepDCGH(object):
         self.num_frames = model_params['num_frames']
         self.quantization = 2**model_params['quantization']
         self.path = model_params['path']
+        self.path = self.path.replace('/', os.sep).replace('\\', os.sep)
         self.shape = data_params['shape']
         self.plane_distance = model_params['plane_distance']
         self.n_kernels = model_params['n_kernels']
@@ -437,28 +442,43 @@ class DeepDCGH(object):
     def __check_avalability(self):
         print('Looking for trained models in:')
         print(os.getcwd(), '\n')
+
+        # Modify self.filename to remove invalid characters
+        shape_str = '{}x{}x{}'  .format(*self.shape)
+        wavelength_str = '{:.2e}'.format(self.wavelength).replace('.', '_').replace('-', 'm')
+        ps_str = '{:.2e}'.format(self.ps).replace('.', '_').replace('-', 'm')
+        plane_distance_str = '{:.2f}'.format(self.plane_distance).replace('.', '_')
         
-        self.filename = 'Model_{}_SHP{}_IF{}_Dst{}_WL{}_PS{}_CNT{}_{}'.format(self.object_type,
-                                                                              self.shape, 
-                                                                              self.IF,
-                                                                              self.plane_distance,
-                                                                              self.wavelength,
-                                                                              self.ps,
-                                                                              self.centralized,
-                                                                              self.token)
-        
+        self.filename = 'Model_{}_SHP{}_IF{}_Dst{}_WL{}_PS{}_CNT{}_{}'.format(
+            self.object_type,
+            shape_str, 
+            self.IF,
+            plane_distance_str,
+            wavelength_str,
+            ps_str,
+            self.centralized,
+            self.token
+        )
+
+        self.path = self.path.replace('/', os.sep).replace('\\', os.sep)
         self.absolute_file_path = os.path.join(os.getcwd(), self.path, self.filename)
-        
+        self.absolute_file_path  = self.absolute_file_path.replace('/', os.sep).replace('\\', os.sep)
+
         if not os.path.exists(self.absolute_file_path):
             print('No trained models found. Please call the `train` method. \nModel checkpoints will be stored in: \n {}'.format(self.absolute_file_path))
-            
         else:
             print('Model already exists.')
+
     
     
     def __make_folders(self):
         if not os.path.exists(self.absolute_file_path):
-            os.makedirs(self.absolute_file_path)
+            try:
+                os.makedirs(self.absolute_file_path)
+                print(f"Created directory: {self.absolute_file_path}")
+            except OSError as e:
+                print(f"Failed to create directory {self.absolute_file_path}: {e}")
+                raise
     
         
     def train(self, deepcgh_dataset, lr = None, batch_size = None, epochs = None, token = None, shuffle = None, max_steps = None):
@@ -758,6 +778,7 @@ class DeepCGH(object):
         
         
         self.path = model_params['path']
+        self.path = self.path.replace('/', os.sep).replace('\\', os.sep)
         self.shape = data_params['shape']
         self.plane_distance = model_params['plane_distance']
         self.quantization = 2**model_params['quantization']
@@ -819,6 +840,7 @@ class DeepCGH(object):
                                                                               self.centralized,
                                                                               self.token)
         
+        self.path = self.path.replace('/', os.sep).replace('\\', os.sep)
         self.absolute_file_path = os.path.join(os.getcwd(), self.path, self.filename)
         
         if not os.path.exists(self.absolute_file_path):
@@ -830,7 +852,12 @@ class DeepCGH(object):
     
     def __make_folders(self):
         if not os.path.exists(self.absolute_file_path):
-            os.makedirs(self.absolute_file_path)
+            try:
+                os.makedirs(self.absolute_file_path)
+                print(f"Created directory: {self.absolute_file_path}")
+            except OSError as e:
+                print(f"Failed to create directory {self.absolute_file_path}: {e}")
+                raise
     
         
     def train(self, deepcgh_dataset, lr = None, batch_size = None, epochs = None, token = None, shuffle = None, max_steps = None):
@@ -1111,5 +1138,3 @@ class DeepCGH(object):
                                                       loss = acc,
                                                       train_op = train_op)
         return model_fn
-
-

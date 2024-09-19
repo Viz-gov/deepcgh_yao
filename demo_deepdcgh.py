@@ -12,6 +12,8 @@ from glob import glob
 import scipy.io as scio
 from utils import GS3D, display_results, get_propagate
 import matplotlib.pyplot as plt
+from datetime import datetime
+import imageio
 
 # Define params
 retrain = True
@@ -37,13 +39,13 @@ data = {
 model = {
         'path' : 'DeepCGH_Models/Disks',
         'num_frames':5,
-        'quantization':6,
+        'quantization':8,
         'int_factor':16,
         'n_kernels':[64, 128, 256],
         'plane_distance':0.05,
         'focal_point':0.2,
-        'wavelength':1.04e-6,
-        'pixel_size': 9.2e-6,
+        'wavelength':1.03e-6,
+        'pixel_size': 8e-6,
         'input_name':'target',
         'output_name':'phi_slm',
         'lr' : 1e-4,
@@ -51,7 +53,7 @@ model = {
         'epochs' : 100,
         'token' : 'DCGH',
         'shuffle' : 16,
-        'max_steps' : 4000,
+        'max_steps' :2000,
         # 'HMatrix' : hstack
         }
 
@@ -78,10 +80,30 @@ image = dset.get_randSample()[np.newaxis,...]
 # Get the phase for your target using a trained and loaded DeepCGH
 phase = dcgh.get_hologram(image)
 
+phaseMask1 = phase[0,4,:,:]
+
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+normalized_phase_mask = phaseMask1
+normalized_phase_mask = (normalized_phase_mask - np.min(normalized_phase_mask)) / (np.max(normalized_phase_mask) - np.min(normalized_phase_mask))
+normalized_phase_mask = np.round(normalized_phase_mask * 255)
+normalized_phase_mask = normalized_phase_mask.astype(np.uint8)
+
+# Save the phase mask matrix as a bmp file
+
+base_dir = r'C:\Users\myadmin\Vaziri Dropbox\Yao Wang\Project-SLM_Holography\DeepCGH\Experiment data'
+output_path = f'{base_dir}/{timestamp}_DeepCGHTrainedPhaseMask_Disk.bmp'
+imageio.imwrite(output_path, normalized_phase_mask)
+print('phase mask is saved')
+
+
+'''
 # Simulate what the solution would look like
 reconstruction = propagate(phase).numpy()
+'''
+
 
 #%% display simulation results
+'''
 plt.figure(figsize=(30, 20))
 Z = [-50, 0, 50]
 for i in range(reconstruction.shape[-1]):
@@ -97,3 +119,4 @@ plt.savefig('example.jpg')
 plt.show()
 
 #%%
+'''
