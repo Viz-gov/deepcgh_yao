@@ -122,7 +122,7 @@ def get_propagate(data, model):
             print("H shape after expand_dims:", H.shape)
             H = tf.broadcast_to(H, tf.shape(cf_slm))
             print("H shape after broadcast_to:", H.shape)
-            #H = tf.broadcast_to(tf.expand_dims(H, axis=0), tf.shape(cf_slm))
+            H = tf.broadcast_to(tf.expand_dims(H, axis=0), tf.shape(cf_slm))
             cf_slm *= tf.signal.fftshift(H, axes = [1, 2])
         fft = tf.signal.ifftshift(tf.signal.fft2d(tf.signal.fftshift(cf_slm, axes = [1, 2])), axes = [1, 2])
         img = tf.cast(tf.expand_dims(tf.abs(tf.pow(fft, 2)), axis=-1), dtype=tf.dtypes.float32)
