@@ -1,5 +1,7 @@
 ![header](./header.png)
 
+This repository is a forked edition of the original DeepCGH (https://github.com/UNC-optics/DeepCGH). We aim to provide more information if you need to run the code in the year of 2024, as many of the Python environment has changed significantly. 
+The demo_deepdcgh.py has been changed since the original DeepCGH, to provide directly phase mask extraction, target image saving, and log file recording for reference. 
 
 # DeepCGH: 3D computer generated holography using deep learning
 DeepCGH is an *unsupervised*, *non-iterative* algorithm for computer generated holography. DeepCGH relies on convolutional neural networks to perform *image plane* holography in real-time.
@@ -27,7 +29,7 @@ scipy
 skimage == 0.19.2
 tqdm
 ```
-If you have Python 3.x (preferrably > 3.7), you can easily install package requirements by executing the following command in **Ubuntu** terminal or Anaconda Prompt on **Windows**:
+Use Python 3.9.19, which is the only edition that is tested with this repository in Windows system. Other environment includes the following:
 ```
 pip install cuda-python==11.5.0
 pip install tensorflow-gpu==2.5.0
