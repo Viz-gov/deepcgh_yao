@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tqdm import tqdm
-
-
+import time
+import os
 class GS3D(object):
     '''
     Class for the GS algorithm.
@@ -85,26 +85,93 @@ def gs2d(img, K):
 
 def display_results(imgs, phases, recons, t):
     assert imgs.ndim == 4 and phases.ndim == 4 and recons.ndim == 4, "Dimensions don't match"
-    for img, phase, recon in zip(imgs, phases, recons):
+
+    # 1) make your results folder
+    outdir = 'deepcghresults'
+    os.makedirs(outdir, exist_ok=True)
+
+    # 2) timestamp for filenames
+    timestamp = time.strftime("%Y%m%d-%H%M%S")
+
+    # 3) loop (in case N>1)
+    for idx, (img, phase, recon) in enumerate(zip(imgs, phases, recons)):
         if img.shape[-1] == 1:
             fig, axs = plt.subplots(1, 3, figsize=(9, 5), sharey=True, sharex=True)
-            axs[0].imshow(np.squeeze(img), cmap='gray')
+            axs[0].imshow(np.squeeze(img),   cmap='gray')
             axs[0].set_title('Target')
             axs[1].imshow(np.squeeze(phase), cmap='gray')
             axs[1].set_title('SLM Phase')
             axs[2].imshow(np.squeeze(recon), cmap='gray')
             axs[2].set_title('Simulation')
         else:
-            fig, axs = plt.subplots(2, img.shape[-1] + 1, figsize = (15 * (img.shape[-1] + 1), 30), sharey = True, sharex = True)
-            axs[0, -1].imshow(np.squeeze(phase))
+            fig, axs = plt.subplots(2, img.shape[-1] + 1,
+                                   figsize=(15 * (img.shape[-1] + 1), 30),
+                                   sharey=True, sharex=True)
+            # phase on top right
+            axs[0, -1].imshow(np.squeeze(phase), cmap='gray')
             axs[0, -1].set_title('SLM Phase')
+
             for i in range(img.shape[-1]):
-                axs[0, i].imshow(img[:, :, i], cmap='gray')
-                axs[0, i].set_title('Target @ Z{}'.format(str(i)))
-                axs[1, i].imshow(recon[:, :, i], cmap='gray')
-                axs[1, i].set_title('Reconstructed')
-        fig.suptitle('Inference time was {:.2f}ms'.format(t*1000), fontsize=16)
-        fig.savefig('deepcghresults.png')
+                # normalize each channel so it’s visible
+                tgt_norm = img[:, :, i]   / (np.max(img[:, :, i])   + 1e-8)
+                rec_norm = recon[:, :, i] / (np.max(recon[:, :, i]) + 1e-8)
+
+                axs[0, i].imshow(tgt_norm, cmap='gray')
+                axs[0, i].set_title(f'Target @ Z{i}')
+                axs[1, i].imshow(rec_norm, cmap='gray')
+                axs[1, i].set_title(f'Reconstructed @ Z{i}')
+
+        fig.suptitle(f'Inference time was {t*1000:.2f} ms', fontsize=16)
+
+        # 4) save with timestamp + index
+        filename = f"deepcgh_{timestamp}_{idx}.png"
+        fig.savefig(os.path.join(outdir, filename), bbox_inches='tight')
+        plt.close(fig)
+
+#GPT Displayresults
+# def display_results(imgs, phases, recons, t):
+#     """
+#     imgs:    ndarray (N, H, W, C) — target volumes
+#     phases:  ndarray (N, H, W, 1) — SLM phase masks
+#     recons:  ndarray (N, H, W, C) — propagated reconstructions
+#     t:       float               — inference time in seconds
+#     """
+#     N, H, W, C = imgs.shape
+#     out_dir = 'results'
+#     os.makedirs(out_dir, exist_ok=True)
+
+#     for idx in range(N):
+#         # Save targets
+#         for p in range(C):
+#             tgt = imgs[idx, :, :, p]
+#             plt.imsave(
+#                 f'{out_dir}/target_{idx}_plane{p}.png',
+#                 tgt,
+#                 cmap='gray', vmin=0, vmax=1
+#             )
+
+#         # Save phase mask
+#         phase = phases[idx, :, :, 0]
+#         plt.imsave(
+#             f'{out_dir}/phase_{idx}.png',
+#             phase,
+#             cmap='twilight', vmin=-np.pi, vmax=np.pi
+#         )
+
+#         # Save reconstructions
+#         for p in range(C):
+#             rec = recons[idx, :, :, p]
+#             rec_norm = rec / (rec.max() + 1e-8)
+#             plt.imsave(
+#                 f'{out_dir}/recon_{idx}_plane{p}.png',
+#                 rec_norm,
+#                 cmap='gray', vmin=0, vmax=1
+#             )
+
+#     print(f"Saved all images under ./{out_dir}/ (inference time {t*1000:.1f} ms)")
+
+
+
 
 def get_propagate(data, model):
     shape = data['shape']
@@ -116,12 +183,12 @@ def get_propagate(data, model):
 
     def __prop__(cf_slm, H = None, center = False):
         if not center:
-            print("cf_slm shape:", cf_slm.shape)
-            print("H shape before expand_dims:", H.shape)
-            H = tf.expand_dims(H, axis=0)
-            print("H shape after expand_dims:", H.shape)
-            H = tf.broadcast_to(H, tf.shape(cf_slm))
-            print("H shape after broadcast_to:", H.shape)
+            # print("cf_slm shape:", cf_slm.shape)
+            # print("H shape before expand_dims:", H.shape)
+            # H = tf.expand_dims(H, axis=-1)
+            # print("H shape after expand_dims:", H.shape)
+            # H = tf.broadcast_to(H, tf.shape(cf_slm))
+            # print("H shape after broadcast_to:", H.shape)
             H = tf.broadcast_to(tf.expand_dims(H, axis=0), tf.shape(cf_slm))
             cf_slm *= tf.signal.fftshift(H, axes = [1, 2])
         fft = tf.signal.ifftshift(tf.signal.fft2d(tf.signal.fftshift(cf_slm, axes = [1, 2])), axes = [1, 2])
@@ -131,7 +198,7 @@ def get_propagate(data, model):
     def propagate(phi_slm):
                     frames = []
                     print("phi_slm shape:", phi_slm.shape, flush=True)
-                    cf_slm = tf.math.exp(tf.dtypes.complex(np.float32(0.), tf.squeeze(phi_slm, axis=0)))
+                    cf_slm = tf.math.exp(tf.dtypes.complex(np.float32(0.), tf.squeeze(phi_slm, axis=-1)))
                     for H in Hs:
                         frames.append(__prop__(cf_slm, tf.keras.backend.constant(H, dtype = tf.complex64)))
                     

@@ -679,9 +679,20 @@ class DeepDCGH(object):
             amp_0_ = Conv2D(self.num_frames * self.IF**2, (3, 3), activation='relu', padding='same')(x4)
             amp_0 = Lambda(deinterleave, name='amp_0')(amp_0_)
             
-            modulation = Lambda(__ifft_AmPh, name='modulation')([amp_0, phi_0])
+            # modulation = Lambda(__ifft_AmPh, name='modulation')([amp_0, phi_0])
             
-            return Model(inp, modulation)
+            # return Model(inp, modulation)
+            #GPT added code
+            # build the phase-only mask as before
+            phi_slm = Lambda(__ifft_AmPh, name='phi_slm')([amp_0, phi_0])
+
+            # Now also output the raw amplitude map (optional, for inspection)
+            # We clip or normalize amp_0 into [0,1]:
+            amp_out = Lambda(lambda x: x / (tf.reduce_max(x)+1e-8), name='amp_slm')(amp_0)
+
+            # Return both amplitude and phase
+            return Model(inp, [amp_out, phi_slm], name='DeepCGH_UNet')
+
             
         
         def __accuracy(y_true, y_pred):
